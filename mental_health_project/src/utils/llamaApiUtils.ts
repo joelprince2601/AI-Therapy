@@ -3,7 +3,7 @@
  */
 
 // API key for OpenRouter from environment variables
-const LLAMA_API_KEY = import.meta.env.VITE_LLAMA_API_KEY || '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';
+const LLAMA_API_KEY = import.meta.env.VITE_LLAMA_API_KEY;
 const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 export interface LlamaMessage {
@@ -42,6 +42,11 @@ export const sendLlamaRequest = async (
   systemPrompt?: string
 ): Promise<string> => {
   try {
+    // Check if API key is available
+    if (!LLAMA_API_KEY) {
+      throw new Error('API key not found. Please set the VITE_LLAMA_API_KEY environment variable.');
+    }
+    
     // Prepare the conversation history with an optional system message
     const conversationHistory: LlamaMessage[] = [];
     

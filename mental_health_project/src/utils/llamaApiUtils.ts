@@ -6,6 +6,9 @@
 const LLAMA_API_KEY = import.meta.env.VITE_LLAMA_API_KEY;
 const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
+// Log if API key is available (for debugging)
+console.log('API key available:', !!LLAMA_API_KEY);
+
 export interface LlamaMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
@@ -44,7 +47,8 @@ export const sendLlamaRequest = async (
   try {
     // Check if API key is available
     if (!LLAMA_API_KEY) {
-      throw new Error('API key not found. Please set the VITE_LLAMA_API_KEY environment variable.');
+      console.error('API key not found in environment variables');
+      return 'Configuration error: API key not found. Please check your environment variables.';
     }
     
     // Prepare the conversation history with an optional system message
@@ -66,6 +70,8 @@ export const sendLlamaRequest = async (
       'http://localhost:5173' : 
       `https://${hostname}`;
     
+    console.log('Making API request to:', API_URL);
+    
     // Make the API request
     const response = await fetch(API_URL, {
       method: 'POST',
@@ -86,7 +92,7 @@ export const sendLlamaRequest = async (
     if (!response.ok) {
       const errorData = await response.text();
       console.error('OpenRouter API error:', errorData);
-      throw new Error(`API request failed: ${response.status} - ${errorData}`);
+      return `API error (${response.status}): ${errorData || 'Unknown error'}. Please check your API key and try again.`;
     }
     
     const data: LlamaResponse = await response.json();
@@ -95,11 +101,12 @@ export const sendLlamaRequest = async (
     if (data.choices && data.choices.length > 0) {
       return data.choices[0].message.content;
     } else {
-      throw new Error('No response from the model');
+      console.error('No choices in response:', data);
+      return 'The model returned an empty response. Please try again with a different message.';
     }
   } catch (error) {
     console.error('Error calling Llama API:', error);
-    return 'I apologize, but I encountered an issue processing your request. Please try again.';
+    return `Error: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`;
   }
 };
 

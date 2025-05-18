@@ -13,3 +13,12 @@ interface SpeechRecognition extends EventTarget {
   start: () => void;
   stop: () => void;
 }
+
+interface ImportMetaEnv {
+  readonly VITE_LLAMA_API_KEY: string;
+  // Add more environment variables as needed
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
